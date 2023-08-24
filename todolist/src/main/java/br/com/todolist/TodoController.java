@@ -17,9 +17,10 @@ public class TodoController {
     public TodoController(TodoRepository todoRepo) {
         this.todoRepo = todoRepo;
     }
+
     @GetMapping
     @ResponseStatus(code = HttpStatus.OK)
-    public List<Todo> getAll(){
+    public List<Todo> getAll() {
         return this.todoRepo.findAll();
 
     }
@@ -34,11 +35,52 @@ public class TodoController {
     @DeleteMapping("/{tarefaId}")
     public ResponseEntity<Void> delete(@PathVariable Integer tarefaId) {
         Optional<Todo> todo = this.todoRepo.findById(tarefaId);
-        if (todo.isPresent()){
+        if (todo.isPresent()) {
             this.todoRepo.deleteById(tarefaId);
             return ResponseEntity.noContent().build();
-        } else{
+        } else {
             return ResponseEntity.notFound().build();
         }
+    }
+
+    @PutMapping("/{tarefaId}/start_task")
+    public ResponseEntity<Todo> startTask(@PathVariable Integer todoId) {
+        Todo todoDataBase = this.todoRepo.findById(todoId).get();
+
+        if (todoDataBase != null) {
+            todoDataBase.setStatus(StatusEnum.IN_PROGRESS);
+            this.todoRepo.save(todoDataBase);
+            return ResponseEntity.ok(todoDataBase);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PutMapping("/{tarefaId}/end_task")
+    public ResponseEntity endTask(@PathVariable Integer todoId){
+        Todo todoDataBase = this.todoRepo.findById(todoId).get();
+
+        if(todoDataBase != null){
+            todoDataBase.setStatus(StatusEnum.FINISHED);
+            this.todoRepo.save(todoDataBase);
+            return ResponseEntity.ok(todoDataBase);
+        }else{
+           return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PutMapping("/{todoId}")
+    public ResponseEntity<Todo>update(@PathVariable Integer todoId, @RequestBody Todo todo){
+
+        Todo todoDataBase = this.todoRepo.findById(todoId).get();
+        if(todoDataBase != null){
+            todoDataBase.setTitle(todo.getTitle());
+            todoDataBase.setDescription(todo.getDescription());
+            this.todoRepo.save(todoDataBase);
+            return ResponseEntity.ok(todoDataBase);
+        } else{
+            return ResponseEntity.ok(todoDataBase);
+        }
+
     }
 }
